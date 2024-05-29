@@ -14,7 +14,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
+import org.mathieu.sandbox.ui.components.episode.EpisodeCard
 
 @Composable
 fun CharacterDetailsScreen(
@@ -24,19 +26,40 @@ fun CharacterDetailsScreen(
     val viewModel: CharacterDetailsViewModel = viewModel()
     val state: CharacterDetailsState by viewModel.state.collectAsState()
 
+    // Initialize the ViewModel.
     LaunchedEffect(key1 = 0) {
         viewModel.initialize(id = characterId)
     }
 
+    // Collect events emitted by the ViewModel.
+    LaunchedEffect(viewModel.events) {
+        viewModel.events
+            .onEach { event ->
+
+                when(event) {
+                    is CharacterDetailsEvent.NavigateToDetails -> navController.navigate(
+                        route = "episodes/${event.id}"
+                    )
+
+                    null -> { }
+                }
+
+            }.collect()
+    }
+
     Content(
-        state = state
+        state = state,
+        clickedOnCard = {
+            viewModel.navigateToDetails(it)
+        }
     )
 }
 
 
 @Composable
 private fun Content(
-    state: CharacterDetailsState
+    state: CharacterDetailsState,
+    clickedOnCard: (Int) -> Unit = { }
 ) = Column {
     Card(
         modifier = Modifier
@@ -47,8 +70,15 @@ private fun Content(
         Text(text = state.lastName)
     }
 
-}
-
+        // Display the list of episodes
+        state.episodes.forEach {
+             EpisodeCard(
+                date = it.date,
+                name = it.name,
+                onClick = { clickedOnCard(it.id) }
+             )
+        }
+    }
 
 @Preview
 @Composable
