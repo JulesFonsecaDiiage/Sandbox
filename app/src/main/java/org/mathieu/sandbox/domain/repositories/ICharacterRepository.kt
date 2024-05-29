@@ -2,7 +2,11 @@ package org.mathieu.sandbox.domain.repositories
 
 import org.mathieu.sandbox.domain.models.Character
 
+/**
+ * Data access layer interface for the [Character] entity.
+ */
 interface ICharacterRepository {
+
     /**
      * Try to retrieve a character, using its id. If there is no character found, then it returns null.
      *
@@ -11,6 +15,8 @@ interface ICharacterRepository {
      */
     fun getCharacterByIdOrNull(id: Int): Character?
 
+    /**
+     * Retrieve all the characters.
+     */
     fun getCharacters(): List<Character>
-
 }
